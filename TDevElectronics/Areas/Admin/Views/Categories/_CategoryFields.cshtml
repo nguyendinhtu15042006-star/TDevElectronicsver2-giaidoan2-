@@ -1,0 +1,8 @@
+@model CategoryFormViewModel
+<input type="hidden" asp-for="OriginalSlug" />
+<div class="g2s">
+    <label class="fld"><small>Tên danh mục *</small><input asp-for="Name" /><span asp-validation-for="Name" style="color:#ef4444"></span></label>
+    <label class="fld"><small>URL slug *</small><input asp-for="Slug" readonly="@Model.IsEdit" /><span asp-validation-for="Slug" style="color:#ef4444"></span></label>
+    <label class="fld"><small>Display order</small><input asp-for="DisplayOrder" type="number" min="1" max="99" /><span asp-validation-for="DisplayOrder" style="color:#ef4444"></span></label>
+    <label class="ck"><input asp-for="IsActive" type="checkbox" />Active</label>
+</div>

@@ -1,0 +1,34 @@
+@using System.Security.Claims
+@using System.Text.Json
+@{
+    // Server dùng Cookie Auth, còn app.js (từ template) tự đọc phiên từ localStorage "tdev-sess".
+    // Nếu hai bên lệch nhau, app.js chuyển /Account -> /Account/Login còn server lại chuyển /Account/Login -> /Account,
+    // trang nháy liên tục. Partial này ghi phiên của server vào localStorage trước khi app.js chạy.
+    var authed = User.Identity?.IsAuthenticated == true;
+    var role = (User.FindFirst(ClaimTypes.Role)?.Value ?? "").ToLowerInvariant();
+    var json = authed && (role == "customer" || role == "admin")
+        ? JsonSerializer.Serialize(new
+        {
+            email = User.FindFirst(ClaimTypes.Email)?.Value ?? "",
+            name = User.FindFirst(ClaimTypes.Name)?.Value ?? "",
+            role
+        })
+        : "null";
+}
+<script>
+(function () {
+    try {
+        var u = @Html.Raw(json);
+        if (u) {
+            var o = null;
+            try { o = JSON.parse(localStorage.getItem('tdev-sess')); } catch (e) { }
+            var same = o && o.email === u.email;
+            u.name = (same && o.name) || u.name;          // tên, công ty khách sửa ở trang Settings được giữ lại
+            u.company = (same && o.company) || (u.role === 'admin' ? 'TDev' : '');
+            localStorage.setItem('tdev-sess', JSON.stringify(u));
+        } else {
+            localStorage.removeItem('tdev-sess');
+        }
+    } catch (e) { }
+})();
+</script>

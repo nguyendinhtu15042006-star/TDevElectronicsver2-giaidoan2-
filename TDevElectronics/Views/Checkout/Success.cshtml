@@ -1,0 +1,77 @@
+﻿@model OrderSummary
+@using TDevElectronics.Data
+@{
+    ViewData["Title"] = "Order confirmed";
+    ViewBag.Page = "success";
+
+    var first = (Model.Name ?? "").Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "there";
+    var instalment = Math.Floor(Model.Total * 100m / 4m) / 100m;
+    var note = Model.PaymentKey switch
+    {
+        "bank" => $"Please transfer {SampleData.Money(Model.Total)} within 5 days using reference {Model.Ref}. We ship as soon as it arrives.",
+        "net30" => "Your invoice is due 30 days after delivery.",
+        "bnpl" => $"Your first payment of {SampleData.Money(instalment)} was taken. The next 3 follow every 2 weeks.",
+        "cod" => $"Please have {SampleData.Money(Model.Total)} ready for the courier.",
+        _ => "Payment received. We’re preparing your order."
+    };
+}
+
+@* Trang xác nhận đơn (Phần việc C). Dữ liệu lấy từ Session do CheckoutController.PlaceOrder ghi lại.
+   Nếu chưa có đơn nào, controller chuyển về giỏ hàng. *@
+<section class="pg " id="success">
+    <p class="cr m">Home &nbsp;/&nbsp; Cart / Checkout / Confirmation</p>
+    <div class="state mintbg">
+        <div class="cd conf">
+            <svg class="i big2"><use href="#i-check" /></svg>
+            <div class="x">
+                <h2>Nice choice, @first. Your order is in!</h2>
+                <p class="gr">@Model.Ref · @SampleData.Money(Model.Total) · @Model.PaymentStatus · Arrives @Model.Eta</p>
+                <p class="m" style="margin:8px 0">Payment <b>@Model.PaymentName</b><br>@note</p>
+                <small class="m">Confirmation and invoice sent to @Model.Email.</small>
+            </div>
+            <a class="bt" asp-controller="Account" asp-action="Index">View my orders</a>
+        </div>
+    </div>
+
+    <div class="lay2 osum">
+        <div class="cd">
+            <h3>Order @Model.Ref</h3>
+            <div class="tw">
+                <table>
+                    <tr><th>Product</th><th>SKU</th><th>Quantity</th><th>Price</th></tr>
+                    @foreach (var l in Model.Lines)
+                    {
+                        <tr><td><b>@l.Name</b></td><td>@l.Sku</td><td>@l.Qty</td><td>@SampleData.Money(l.Line)</td></tr>
+                    }
+                </table>
+            </div>
+            <div class="g2s">
+                <div class="cd ln">
+                    <h3>Deliver to</h3>
+                    <p class="m">@Model.Name<br>@Model.ShipTo</p>
+                </div>
+                <div class="cd ln">
+                    <h3>Pay with</h3>
+                    <p class="m">@Model.PaymentName@(Model.PaymentStatus == Model.PaymentName ? "" : " · " + Model.PaymentStatus)</p>
+                </div>
+            </div>
+        </div>
+        <aside class="cd sum">
+            <h3>Order summary</h3>
+            <p class="sl"><span class="m">Subtotal</span><b>@SampleData.Money(Model.Subtotal)</b></p>
+            <p class="sl"><span class="m">Shipping</span><b>@(Model.Shipping == 0 ? "Free" : SampleData.Money(Model.Shipping))</b></p>
+            <p class="sl"><span class="m">Tax (8%)</span><b>@SampleData.Money(Model.Tax)</b></p>
+            @if (Model.Fee > 0)
+            {
+                <p class="sl"><span class="m">Payment fee</span><b>@SampleData.Money(Model.Fee)</b></p>
+            }
+            <hr>
+            <p class="sl"><b>Total</b><b class="tot">@SampleData.Money(Model.Total)</b></p>
+            <a class="bo wd" asp-controller="Shop" asp-action="Index">Continue shopping</a>
+        </aside>
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/checkout.css" asp-append-version="true" />
+}

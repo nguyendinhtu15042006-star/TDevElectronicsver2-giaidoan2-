@@ -1,0 +1,125 @@
+@using System.Security.Claims
+@using System.Text.Json
+@inject TDevElectronics.Data.AppDbContext DbContext
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    string? avatarJsonRaw = null;
+    if (User.Identity?.IsAuthenticated == true && int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int uid))
+    {
+        avatarJsonRaw = DbContext.Users
+            .Where(u => u.Id == uid)
+            .Select(u => u.AvatarJson)
+            .FirstOrDefault();
+    }
+}
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>@ViewData["Title"] - TDev Administration</title>
+    
+    <link rel="icon" type="image/svg+xml" href="~/assets/favicon.svg" />
+    <link rel="stylesheet" href="~/css/main.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/page-fx.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/mobile.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+    <partial name="_SessionBridge" />
+</head>
+<body class="admin-body" data-page="@ViewBag.Page">
+    <!-- SVG Icon Definitions dùng chung từ Layout chính -->
+    <partial name="_Header" />
+
+    <div class="admin-wrapper" style="display: flex; min-height: 100vh;">
+        <!-- Sidebar -->
+        <aside class="sb">
+            <a class="lg" asp-area="" asp-controller="Home" asp-action="Index">
+                <b>T</b>TDev
+            </a>
+            <a class="@(currentController == "Dashboard" ? "on" : "")" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                <svg class="i"><use href="#i-grid" /></svg>Dashboard
+            </a>
+            <a class="@(currentController == "Products" ? "on" : "")" asp-area="Admin" asp-controller="Products" asp-action="Index">
+                <svg class="i"><use href="#i-box" /></svg>Products
+            </a>
+            <a class="@(currentController == "Categories" ? "on" : "")" asp-area="Admin" asp-controller="Categories" asp-action="Index">
+                <svg class="i"><use href="#i-layers" /></svg>Categories
+            </a>
+            <a class="@(currentController == "Orders" ? "on" : "")" asp-area="Admin" asp-controller="Orders" asp-action="Index">
+                <svg class="i"><use href="#i-bag" /></svg>Orders
+            </a>
+            <a class="@(currentController == "Quotes" ? "on" : "")" asp-area="Admin" asp-controller="Quotes" asp-action="Index">
+                <svg class="i"><use href="#i-file" /></svg>Quote Requests
+            </a>
+            <a class="@(currentController == "Users" ? "on" : "")" asp-area="Admin" asp-controller="Users" asp-action="Index">
+                <svg class="i"><use href="#i-users" /></svg>Users
+            </a>
+            <a class="@(currentController == "Settings" ? "on" : "")" asp-area="Admin" asp-controller="Settings" asp-action="Index">
+                <svg class="i"><use href="#i-gear" /></svg>Settings
+            </a>
+            <p class="ws">
+                <small>WORKSPACE</small>
+                <b>TDev Administration</b>
+                <small>Manage your business catalog.</small>
+            </p>
+        </aside>
+
+        <!-- Khung nội dung chính & Topbar -->
+        <div class="admin-main-wrap" style="flex: 1; display: flex; flex-direction: column;">
+            <!-- Topbar quản trị (.atop) -->
+            <header class="atop" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; border-bottom: 1px solid var(--bd);">
+                <div class="atop-left">
+                    <span class="pill">ADMIN PANEL</span>
+                </div>
+                <div class="atop-right" style="display: flex; align-items: center; gap: 16px;">
+                    <!-- Nút đổi tiền tệ & ngôn ngữ -->
+                    <button type="button" class="bo sm" id="btn-curr-toggle">VNĐ / USD</button>
+                    <button type="button" class="bo sm" id="btn-lang-toggle">VI / EN</button>
+
+                    <!-- Chuông thông báo -->
+                    <button type="button" class="ic-btn" aria-label="Notifications" style="background: none; border: none; cursor: pointer; color: var(--tx);">
+                        <svg class="i"><use href="#i-bell" /></svg>
+                    </button>
+
+                    <!-- Profile & Logout -->
+                    <div class="admin-user-info" style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-weight: 600; font-size: 14px;">@User.Identity?.Name</span>
+                        <form asp-area="Admin" asp-controller="Auth" asp-action="Logout" method="post" style="display: inline;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="bo sm danger">Đăng xuất</button>
+                        </form>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Render nội dung từng trang Dashboard/Users/Products -->
+            <main style="flex: 1; padding: 24px;">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <!-- Token ẩn phục vụ lưu Avatar qua Fetch API -->
+    <form id="admin-csrf-form" style="display:none;">@Html.AntiForgeryToken()</form>
+
+    <!-- Script dữ liệu đồng bộ người dùng -->
+    <script>
+        window.TDEV_ME = {
+            authenticated: @(User.Identity?.IsAuthenticated == true ? "true" : "false"),
+            name: @Html.Raw(JsonSerializer.Serialize(User.Identity?.Name ?? "")),
+            role: @Html.Raw(JsonSerializer.Serialize(User.FindFirst(ClaimTypes.Role)?.Value ?? "")),
+            avatar: @Html.Raw(string.IsNullOrWhiteSpace(avatarJsonRaw) ? "null" : JsonSerializer.Serialize(avatarJsonRaw)),
+            saveAvatarUrl: "/Admin/Auth/SaveAvatar"
+        };
+    </script>
+
+    <script src="~/js/components.js" asp-append-version="true"></script>
+    <script src="~/js/export-font.js" asp-append-version="true"></script>
+    <script src="~/js/export.js" asp-append-version="true"></script>
+    <script src="~/js/app.js" asp-append-version="true"></script>
+    <script src="~/js/admin-pages.js" asp-append-version="true"></script>
+    <script src="~/js/i18n.js" asp-append-version="true"></script>
+    <script src="~/js/mobile.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

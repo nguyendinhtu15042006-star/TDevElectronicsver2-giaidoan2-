@@ -1,0 +1,96 @@
+﻿@model ProductDetailViewModel
+@using TDevElectronics.Data
+@{
+    var p = Model.Product;
+    ViewData["Title"] = p.Name;
+    ViewBag.Page = "product";
+}
+
+@* Cấu trúc giống hệt template (product.html). app.js (showProduct) đọc data-k rồi đồng bộ gallery, tab, đánh giá, sản phẩm liên quan *@
+<section class="pg " id="product" data-k="@p.Key">
+    <p class="cr m">Home &nbsp;/&nbsp; @Model.Category.Name / @p.Name</p>
+    <div class="g2d">
+        <div>
+            <div class="ph @p.Key gal"></div>
+            <div class="g4 th">
+                <div class="ph @p.Key on"></div>
+                <div class="ph @p.Key"></div>
+                <div class="ph @p.Key"></div>
+                <div class="ph @p.Key"></div>
+            </div>
+            <p class="m" id="gcap"></p>
+        </div>
+        <div>
+            <small class="m">@p.Brand.ToUpperInvariant() / @Model.Category.Name.ToUpperInvariant()</small>
+            <h1>@p.Name</h1>
+            <p class="stars">@Model.Stars <small class="m">&nbsp;@p.Rating out of 5 · @p.Reviews verified reviews</small></p>
+            <p class="m">@p.Description</p>
+            <span class="tg@(p.IsLowStock ? " a" : "")">@p.StockLabel</span> <span class="tg b">Free delivery</span>
+            <h2 class="big" id="pp">@p.PriceText</h2>
+            <small class="m">Retail price · Tax calculated at checkout</small>
+            <p><b>Color: @(p.Colors.Length > 0 ? p.Colors[0].Name : "Standard")</b></p>
+            <div class="sw">
+                @for (var i = 0; i < p.Colors.Length; i++)
+                {
+                    <i style="background:@p.Colors[i].Hex" class="@(i == 0 ? "on" : "")"></i>
+                }
+            </div>
+            <div class="op">
+                @for (var i = 0; i < p.Options.Length; i++)
+                {
+                    <a class="@(i == 0 ? "on" : "")">@p.Options[i]</a>
+                }
+            </div>
+            <div class="bp">
+                <h3>Better together · Business pricing</h3>
+                <div class="tw">
+                    <table>
+                        <tr><th>Quantity</th><th>Unit price</th><th>Savings</th></tr>
+                        @foreach (var r in Model.TierRows)
+                        {
+                            <tr class="@(r.Highlight ? "hl" : "")"><td><b>@r.Range</b></td><td>@r.Price</td><td>@r.Savings</td></tr>
+                        }
+                    </table>
+                </div>
+                <small class="m">Bulk rates exclude tax.</small>
+            </div>
+            <div class="buy">
+                <div class="qty"><a data-q="-1">−</a><b id="pq">1</b><a data-q="1">+</a></div>
+                <a class="bt grow" href="/Cart" data-add="@p.Key">Add to Cart <svg class="i "><use href="#i-cart" /></svg></a>
+            </div>
+            <p class="m"><small>Arrives @Model.Eta · 30-day returns · @p.Warranty</small></p>
+        </div>
+    </div>
+    <div class="tabs"><a class="on">Overview</a><a class="">Specifications</a><a class="">Reviews (@p.Reviews)</a><a class="">Delivery &amp; warranty</a></div>
+    <div class="g2">
+        <div class="cd">
+            <h3>@p.OverviewTitle</h3>
+            <p class="m">@p.About</p>
+            <ul class="cl">
+                @foreach (var h in p.Highlights)
+                {
+                    <li><svg class="i "><use href="#i-check" /></svg>@h</li>
+                }
+            </ul>
+        </div>
+        <div class="cd">
+            <h3>Technical specifications</h3>
+            <dl class="sp2">
+                @foreach (var s in p.Specs)
+                {
+                    <dt>@s.Label</dt>
+                    <dd>@s.Value</dd>
+                }
+            </dl>
+        </div>
+    </div>
+    <div class="rel" id="rel"></div>
+</section>
+
+@* Nguồn thẻ sản phẩm cho app.js (như template tiêm #pc-src vào mọi trang) *@
+<div id="pc-src" hidden>
+    @foreach (var q in SampleData.Products)
+    {
+        <partial name="_ProductCard" model="q" />
+    }
+</div>

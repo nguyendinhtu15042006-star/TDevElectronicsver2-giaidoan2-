@@ -1,0 +1,35 @@
+@model ShopViewModel
+<aside class="cd fs">
+    <form id="shop-filter" method="get" asp-controller="Shop" asp-action="Index">
+        <h3>Filters</h3>
+        @if (!string.IsNullOrWhiteSpace(Model.Query))
+        {
+            <input type="hidden" name="q" value="@Model.Query" />
+        }
+
+        <h4>Category</h4>
+        @foreach (var o in Model.CategoryOptions)
+        {
+            <label class="ck"><input type="checkbox" name="cat" value="@o.Value" checked="@o.Selected" />@o.Label (@o.Count)</label>
+        }
+
+        <h4>Brand</h4>
+        <div class="fs-brands">
+            @foreach (var o in Model.BrandOptions)
+            {
+                <label class="ck"><input type="checkbox" name="brand" value="@o.Value" checked="@o.Selected" />@o.Label (@o.Count)</label>
+            }
+        </div>
+
+        <h4>Price range</h4>
+        <div class="g2s">
+            <label class="fld"><small>Min</small><input type="number" name="min" min="0" step="1" inputmode="numeric" placeholder="$0" value="@Model.PriceMin" /></label>
+            <label class="fld"><small>Max</small><input type="number" name="max" min="0" step="1" inputmode="numeric" placeholder="$2,000" value="@Model.PriceMax" /></label>
+        </div>
+
+        <label class="ck"><input type="checkbox" name="stock" value="true" checked="@Model.InStockOnly" />In stock only</label>
+        <label class="ck"><input type="checkbox" name="bulk" value="true" checked="@Model.BulkOnly" />Bulk pricing available</label>
+
+        <a class="bo wd" asp-controller="Shop" asp-action="Index">Reset filters</a>
+    </form>
+</aside>

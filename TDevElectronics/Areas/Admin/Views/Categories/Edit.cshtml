@@ -1,0 +1,16 @@
+ 
+@model CategoryFormViewModel
+@{
+    ViewData["Title"] = "Sửa danh mục";
+    ViewBag.Page = "a-cat";
+}
+<section class="pg ad"><div class="ab">
+<h1>Sửa danh mục</h1>
+<form asp-action="Edit" asp-route-id="@Model.OriginalSlug" method="post" class="cd">
+    <partial name="_CategoryFields" model="Model" />
+    <button type="submit" class="bt">Lưu</button> <a class="bo" asp-action="Index">Hủy</a>
+</form>
+<form asp-action="Delete" asp-route-id="@Model.OriginalSlug" method="post" style="margin-top:12px"
+      onsubmit="return confirm('Xóa danh mục này?');">
+    <button type="submit" class="bo rd">Xóa danh mục</button>
+</form></div></section>

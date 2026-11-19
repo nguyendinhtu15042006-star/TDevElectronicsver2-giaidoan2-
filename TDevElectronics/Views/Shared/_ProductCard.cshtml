@@ -1,0 +1,12 @@
+@using TDevElectronics.Data
+@model SampleProduct
+<div class="pc" data-k="@Model.Key">
+    <a class="ph @Model.Key" asp-controller="Product" asp-action="Detail" asp-route-sku="@Model.Sku" aria-label="@Model.Name"><svg class="i hr"><use href="#i-heart" /></svg></a>
+    <small class="br">@Model.Brand.ToUpperInvariant()</small>
+    <b>@Model.Name</b>
+    <p class="sp">@Model.Spec<br><span class="st">★</span> @Model.Rating (@Model.Reviews)</p>
+    <h3 class="pr">@Model.PriceText</h3>
+    <span class="tg@(Model.IsLowStock ? " a" : "")">@(Model.IsLowStock ? Model.StockLabel : "In stock")</span>
+    @* Không có href: app.js thêm vào giỏ ngay tại thẻ; có href thì page-fx.js sẽ chuyển trang trước. *@
+    <a class="bx">Add to Cart</a>
+</div>

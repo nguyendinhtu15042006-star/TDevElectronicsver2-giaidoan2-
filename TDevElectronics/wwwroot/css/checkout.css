@@ -1,0 +1,33 @@
+/* checkout.css — Phần việc C (Cart, Checkout, Success).
+   Giữ nguyên màu và cấu trúc của template (main.css); chỉ gỡ chú thích thiết kế và thêm khoảng cách cho thoáng. */
+
+/* Nhãn "VISIBLE STATE / ..." trong template là chú thích thiết kế, không hiển thị cho khách */
+#checkout .pc2,#success .pc2{display:none}
+
+/* Bước 2, 3: bỏ khung nền lồng để thẻ thẳng hàng với bước 1 (bước 4 giữ nền xanh nhạt xác nhận) */
+#checkout .lay2>.state:not(.mintbg){background:none;padding:0;border:0;box-shadow:none;border-radius:0}
+
+/* Khoảng cách giữa tiêu đề, mô tả và nội dung */
+#cart .cr,#checkout .cr,#success .cr{margin-bottom:14px}
+#cart>h1+p,#checkout>h1+p{margin:0 0 22px}
+#checkout [data-step="4"].state{margin-top:8px}
+
+/* Trang Success */
+#success .state{margin:0 0 24px}
+#success .osum{gap:24px}
+#success .osum .tw{margin:12px 0 16px}
+#success .osum .g2s .cd{margin:0}
+#success .osum .sum .bo{margin-top:14px}
+
+@media(max-width:900px){
+  #success .state{margin-bottom:16px}
+  #success .osum{gap:16px}
+  #checkout>h1+p,#cart>h1+p{margin-bottom:16px}
+}
+
+/* Điện thoại: thẻ xác nhận xếp dọc (biểu tượng, nội dung, nút) cho dễ đọc */
+@media(max-width:640px){
+  #success .conf,#checkout .conf{flex-direction:column;align-items:flex-start;gap:14px}
+  #success .conf .x,#checkout .conf .x{width:100%}
+  #success .conf>.bt,#checkout .conf>.bt{width:100%;justify-content:center;text-align:center}
+}

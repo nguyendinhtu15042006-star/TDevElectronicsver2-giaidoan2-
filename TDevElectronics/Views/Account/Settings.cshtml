@@ -1,0 +1,11 @@
+﻿@{
+    ViewData["Title"] = "Settings";
+    ViewBag.Page = "settings";
+}
+
+@* Chuyển từ template 31-settings.html. Bảng và bộ lọc do app.js dựng ở trình duyệt (giai đoạn 1). *@
+<section class="pg" id="settings"><p class="cr m"><a href="/">Home</a> &nbsp;/&nbsp; <a href="/Account">My account</a> &nbsp;/&nbsp; Settings</p><h1>Your settings</h1><p class="m">Choose how TDev looks and what we email you. Only you see these.</p><div class="lay3"><aside class="cd side"><a href="/Account">Overview</a><a href="/Quotes">My Quotes</a><a class="on" href="/Account/Settings">Settings</a><a href="/Account/Login">Sign out</a></aside><div id="cs"></div></div></section>
+
+@section Scripts {
+    <script src="~/js/account.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,24 @@
+@model UserEditViewModel
+@{
+    ViewData["Title"] = "Sửa người dùng";
+    ViewBag.Page = "a-usr";
+}
+<section class="pg ad">
+    <div class="ab">
+        <p class="cr m"><a asp-action="Index">Users</a> / @Model.Email</p>
+        <h1>Sửa người dùng</h1>
+        <form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="cd">
+            @Html.AntiForgeryToken()
+            <input asp-for="Id" type="hidden" />
+            <input asp-for="Email" type="hidden" />
+            <div asp-validation-summary="ModelOnly" style="color:#ef4444"></div>
+            <label class="fld"><small>Email</small><input value="@Model.Email" readonly /></label>
+            <label class="fld"><small>Họ tên *</small><input asp-for="FullName" /><span asp-validation-for="FullName" style="color:#ef4444"></span></label>
+            <label class="fld">
+                <small>Vai trò</small>
+                <select asp-for="Role"><option value="Customer">Customer</option><option value="Admin">Admin</option></select>
+            </label>
+            <label class="ck"><input asp-for="IsActive" type="checkbox" />Đang hoạt động</label>
+            <button type="submit" class="bt">Lưu</button> <a class="bo" asp-action="Index">Hủy</a>
+        </form>    </div>
+    </section>

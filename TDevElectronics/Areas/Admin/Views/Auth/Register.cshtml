@@ -1,0 +1,78 @@
+﻿@model TDevElectronics.Models.ViewModels.AdminRegisterViewModel
+@{
+    ViewData["Title"] = "Kích hoạt mã mời Quản trị viên";
+    Layout = "_Layout";
+}
+
+<section class="pg" id="admin-register">
+    <div class="wrap au">
+        <div class="dkp">
+            <span class="pill w">ADMINISTRATION PORTAL</span>
+            <h1>Activate Admin Access.</h1>
+            <p>Use your single-use 20-character invite code issued by an existing administrator.</p>
+            <div class="ph hero hh"></div>
+            <ul class="cl w">
+                <li><svg class="i"><use href="#i-check" /></svg>20-character cryptographic invite</li>
+                <li><svg class="i"><use href="#i-check" /></svg>Minimum 12-character password</li>
+                <li><svg class="i"><use href="#i-check" /></svg>Rate-limited verification</li>
+            </ul>
+            <small>Invite codes expire automatically and cannot be reused.</small>
+        </div>
+
+        <div class="af auth-form" data-portal="admin">
+            <h1>Activate admin invite</h1>
+            <p class="m">Complete your administrator profile below.</p>
+
+            <form asp-area="Admin" asp-controller="Auth" asp-action="Register" method="post">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="er fm" role="alert" style="margin-bottom: 12px;"></div>
+
+                <label class="fld">
+                    <small>Invite code *</small>
+                    <input asp-for="InviteCode" autocomplete="off" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" style="font-family:monospace;text-transform:uppercase;" />
+                    <span asp-validation-for="InviteCode" class="fe"></span>
+                </label>
+
+                <label class="fld">
+                    <small>Full name *</small>
+                    <input asp-for="FullName" autocomplete="name" placeholder="Nguyen Van A" />
+                    <span asp-validation-for="FullName" class="fe"></span>
+                </label>
+
+                <label class="fld">
+                    <small>Email *</small>
+                    <input asp-for="Email" type="email" autocomplete="email" placeholder="admin@tdevelectronics.local" />
+                    <span asp-validation-for="Email" class="fe"></span>
+                </label>
+
+                <label class="fld">
+                    <small>Password (min 12 characters) *</small>
+                    <span class="pwr">
+                        <input asp-for="Password" type="password" minlength="12" autocomplete="new-password" />
+                        <button type="button" class="eye" data-eye aria-label="Show password">Show</button>
+                    </span>
+                    <span asp-validation-for="Password" class="fe"></span>
+                </label>
+
+                <label class="fld">
+                    <small>Confirm password *</small>
+                    <span class="pwr">
+                        <input asp-for="ConfirmPassword" type="password" minlength="12" autocomplete="new-password" />
+                        <button type="button" class="eye" data-eye aria-label="Show password">Show</button>
+                    </span>
+                    <span asp-validation-for="ConfirmPassword" class="fe"></span>
+                </label>
+
+                <button class="bt wd" type="submit" style="margin-top: 14px;">
+                    Activate &amp; Sign in <svg class="i"><use href="#i-arrow" /></svg>
+                </button>
+            </form>
+
+            <p class="m sw4">
+                Already activated?
+                <a class="pc2" href="/Admin/Auth/Login" onclick="window.location.href=this.href;">Sign in here</a>
+            </p>
+        </div>
+    </div>
+</section>

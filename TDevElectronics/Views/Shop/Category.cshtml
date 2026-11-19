@@ -1,0 +1,18 @@
+﻿@model CategoryViewModel
+@using TDevElectronics.Data
+@{
+    var cat = Model.Category;
+    ViewData["Title"] = cat.Name;
+    ViewBag.Page = "cat-" + cat.Slug;
+}
+
+@* Giống template: section rỗng, app.js (catInit) dựng toàn bộ giao diện danh mục theo id "cat-<slug>" *@
+<section class="pg cat" id="cat-@cat.Slug"></section>
+
+@* Nguồn thẻ sản phẩm cho app.js (như template tiêm #pc-src vào mọi trang) *@
+<div id="pc-src" hidden>
+    @foreach (var q in SampleData.Products)
+    {
+        <partial name="_ProductCard" model="q" />
+    }
+</div>

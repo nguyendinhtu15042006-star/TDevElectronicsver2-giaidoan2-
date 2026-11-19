@@ -1,0 +1,54 @@
+@model SampleOrder
+@{
+    ViewData["Title"] = "Order " + Model.Id;
+    ViewBag.Page = "a-ord";
+    string status = ViewBag.Status;
+    string? cancelReason = ViewBag.CancelReason;
+    string? rejectReason = ViewBag.RejectReason;
+    var locked = status is "Delivered" or "Cancelled";
+}
+<section class="pg ad"><div class="ab">
+<p class="cr m"><a asp-action="Index">Orders</a> / @Model.Id</p>
+<h1>Đơn @Model.Id <span class="tg">@status</span></h1>
+@if (TempData["Success"] != null) { <div class="cd" style="border-left:4px solid #10b981;margin-bottom:16px">@TempData["Success"]</div> }
+@if (TempData["Error"] != null) { <div class="cd" style="border-left:4px solid #ef4444;margin-bottom:16px;color:#ef4444">@TempData["Error"]</div> }
+
+<div class="lay2">
+  <div class="cd">
+    <h3>Khách hàng</h3>
+    <p>@Model.Customer · @Model.Company<br><span class="m">@Model.Email</span></p>
+    <h3>Giao đến</h3><p>@Model.Address</p>
+    <h3>Thanh toán</h3><p>@Model.Payment</p>
+    <p class="m">@Model.Items sản phẩm · Đặt ngày @Model.Date.ToString("dd MMM yyyy")</p>
+    <p class="sl"><b>Tổng</b><b class="tot">@SampleData.Money(Model.Total)</b></p>
+  </div>
+  <div class="cd">
+    @if (cancelReason != null && !locked)
+    {
+        <h3>Khách yêu cầu hủy</h3>
+        <p>Lý do: @cancelReason</p>
+        <form asp-action="ApproveCancel" asp-route-id="@Model.Id" method="post"><button class="bt" type="submit">Duyệt hủy đơn</button></form>
+        <form asp-action="RejectCancel" asp-route-id="@Model.Id" method="post" style="margin-top:10px">
+            <label class="fld"><small>Lý do từ chối *</small><input name="reason" /></label>
+            <button class="bo rd" type="submit">Từ chối yêu cầu</button>
+        </form>
+    }
+    @if (rejectReason != null) { <p class="m">Đã từ chối yêu cầu hủy: @rejectReason</p> }
+    @if (!locked)
+    {
+        <h3 style="margin-top:16px">Cập nhật trạng thái</h3>
+        <form asp-action="UpdateStatus" asp-route-id="@Model.Id" method="post">
+            <select name="status">
+                @foreach (var s in SampleAdminData.OrderStatuses.Where(x => x != "Cancelled")) { <option value="@s" selected="@(s == status)">@s</option> }
+            </select>
+            <button class="bt" type="submit">Lưu</button>
+        </form>
+        <h3 style="margin-top:16px">Hủy đơn (admin)</h3>
+        <form asp-action="Cancel" asp-route-id="@Model.Id" method="post">
+            <label class="fld"><small>Lý do hủy *</small><input name="reason" /></label>
+            <button class="bo rd" type="submit">Cancel order</button>
+        </form>
+    }
+    else { <p class="m">Đơn đã @(status == "Delivered" ? "giao" : "hủy"), không thể thay đổi.</p> }
+  </div>
+</div></div></section>

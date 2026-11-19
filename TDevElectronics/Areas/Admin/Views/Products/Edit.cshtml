@@ -1,0 +1,12 @@
+@model ProductFormViewModel
+@{
+    ViewData["Title"] = "Sửa sản phẩm";
+    ViewBag.Page = "a-prod";
+}
+<section class="pg ad"><div class="ab">
+<h1>Sửa sản phẩm</h1>
+<p class="m">Giai đoạn 1: form kiểm tra dữ liệu ở server, chưa ghi CSDL.</p>
+<form asp-action="Edit" asp-route-id="@Model.OriginalSku" method="post" class="cd">
+    <partial name="_ProductForm" model="Model" />
+    <button type="submit" class="bt">Lưu</button> <a class="bo" asp-action="Index">Hủy</a>
+</form></div></section>

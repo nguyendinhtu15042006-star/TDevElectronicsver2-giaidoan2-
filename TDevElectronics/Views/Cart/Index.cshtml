@@ -1,0 +1,17 @@
+﻿@model CartViewModel
+@{
+    ViewData["Title"] = "Your cart";
+    ViewBag.Page = "cart";
+}
+
+@* Giống template (cart.html). app.js (renderCart) dựng danh sách, tăng giảm, xóa, tổng tiền và VAT từ giỏ trong trình duyệt;
+   cart-checkout.js đồng bộ giỏ lên server (CartController.Sync). data-server-* là tổng do server tính từ Session. *@
+<section class="pg " id="cart" data-server-count="@Model.ItemCount" data-server-total="@Model.Total.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"><p class="cr m">Home &nbsp;/&nbsp; Your cart</p><h1>Your next upgrades are here</h1><p class="m">0 items · Nothing here yet.</p><div class="lay2"><div class="cd empty"><h3>Your cart is empty</h3><p class="m">Find your next upgrade and it will show up here.</p><a class="bt" asp-controller="Shop" asp-action="Index">Browse products</a></div></div></section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/checkout.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/js/cart-checkout.js" asp-append-version="true"></script>
+}

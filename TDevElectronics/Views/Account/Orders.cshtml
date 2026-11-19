@@ -1,0 +1,73 @@
+﻿@model IReadOnlyList<OrderView>
+@using TDevElectronics.Data
+@using TDevElectronics.Services
+@{
+    ViewData["Title"] = "My orders";
+    ViewBag.Page = "account-orders";
+    var reasons = new[] { "Đặt nhầm sản phẩm", "Muốn đổi địa chỉ giao hàng", "Tìm được giá tốt hơn", "Thời gian giao hàng quá lâu", "Khác" };
+    string Tag(string s) => s switch { "Pending" => "a", "Processing" => "b", "Shipped" => "b", "Cancelled" => "n", _ => "" };
+}
+<section class="pg" id="acc-orders">
+<p class="cr m"><a href="/">Home</a> &nbsp;/&nbsp; <a asp-action="Index">My account</a> &nbsp;/&nbsp; Orders</p>
+<h1>Your orders</h1>
+<p class="m">Track every order. You can ask us to cancel an order that is still pending or processing.</p>
+
+@if (TempData["Success"] != null) { <div class="cd" style="border-left:4px solid #10b981;margin-bottom:16px">@TempData["Success"]</div> }
+@if (TempData["Error"] != null) { <div class="cd" style="border-left:4px solid #ef4444;margin-bottom:16px;color:#ef4444">@TempData["Error"]</div> }
+
+<div class="lay3">
+<aside class="cd side">
+    <a asp-action="Index">Overview</a>
+    <a class="on" asp-action="Orders">Orders</a>
+    <a asp-controller="Quotes" asp-action="Index">My Quotes</a>
+    <a asp-action="Settings">Settings</a>
+</aside>
+<div>
+@if (Model.Count == 0)
+{
+    <div class="cd empty"><h3>No orders yet</h3><p class="m">Find your next upgrade and it will show up here.</p><a class="bt" asp-controller="Shop" asp-action="Index">Browse products</a></div>
+}
+else
+{
+    <div class="tw"><table>
+        <tr><th>Order</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th><th>Action</th></tr>
+        @foreach (var v in Model)
+        {
+            <tr class="hl">
+                <td><b>@v.Order.Id</b></td>
+                <td>@v.Order.Date.ToString("dd MMM yyyy")</td>
+                <td>@v.Order.Items items</td>
+                <td>@SampleData.Money(v.Order.Total)</td>
+                <td>
+                    <span class="tg @Tag(v.Status)">@v.Status</span>
+                    @if (v.CancelReason != null && v.Status != "Cancelled") { <br /><small class="m">Đã yêu cầu hủy: @v.CancelReason</small> }
+                    @if (v.RejectReason != null) { <br /><small class="m">Yêu cầu hủy bị từ chối: @v.RejectReason</small> }
+                </td>
+                <td>
+                    @if (v.CustomerCanCancel)
+                    {
+                        <details>
+                            <summary class="bo">Hủy</summary>
+                            <form asp-controller="Account" asp-action="CancelRequest" method="post">
+                                <input type="hidden" name="OrderId" value="@v.Order.Id" />
+                                <label class="fld"><small>Lý do *</small>
+                                    <select name="Reason" required>
+                                        <option value="">-- Chọn lý do --</option>
+                                        @foreach (var r in reasons) { <option value="@r">@r</option> }
+                                    </select></label>
+                                <label class="fld"><small>Chi tiết (bắt buộc nếu chọn “Khác”)</small><input name="Detail" maxlength="500" /></label>
+                                <button class="bt" type="submit">Gửi yêu cầu hủy</button>
+                            </form>
+                        </details>
+                    }
+                    else { <span class="m">—</span> }
+                </td>
+            </tr>
+        }
+    </table></div>
+}
+</div></div></section>
+
+@section Scripts {
+    <script src="~/js/account.js" asp-append-version="true"></script>
+}

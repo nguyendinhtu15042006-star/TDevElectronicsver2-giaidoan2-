@@ -1,0 +1,121 @@
+@model ShopViewModel
+@using TDevElectronics.Data
+@{
+    ViewData["Title"] = "Shop";
+    ViewBag.Page = "/Shop";
+
+    // Giữ nguyên bộ lọc khi chuyển trang / bỏ từng bộ lọc
+    Dictionary<string, string?> Qs(Action<Dictionary<string, string?>>? tweak = null)
+    {
+        var d = new Dictionary<string, string?>();
+        if (!string.IsNullOrWhiteSpace(Model.Query)) d["q"] = Model.Query;
+        if (Model.Sort != "recommended") d["sort"] = Model.Sort;
+        if (Model.PriceMin.HasValue) d["min"] = Model.PriceMin.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        if (Model.PriceMax.HasValue) d["max"] = Model.PriceMax.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        if (Model.InStockOnly) d["stock"] = "true";
+        if (Model.BulkOnly) d["bulk"] = "true";
+        tweak?.Invoke(d);
+        return d;
+    }
+    string BuildUrl(Dictionary<string, string?> d, IEnumerable<string>? cats = null, IEnumerable<string>? brands = null)
+    {
+        var parts = d.Where(x => x.Value != null).Select(x => $"{x.Key}={Uri.EscapeDataString(x.Value!)}").ToList();
+        foreach (var c in cats ?? Model.Categories) parts.Add("cat=" + Uri.EscapeDataString(c));
+        foreach (var b in brands ?? Model.Brands) parts.Add("brand=" + Uri.EscapeDataString(b));
+        return "/Shop" + (parts.Count > 0 ? "?" + string.Join("&", parts) : "");
+    }
+    string PageUrl(int p) { var d = Qs(); if (p > 1) d["page"] = p.ToString(); return BuildUrl(d); }
+
+    // Địa chỉ bỏ từng bộ lọc (dùng cho các chip phía trên danh sách)
+    var urlNoQuery = BuildUrl(Qs(d => d.Remove("q")));
+    var urlNoPrice = BuildUrl(Qs(d => { d.Remove("min"); d.Remove("max"); }));
+    var urlNoStock = BuildUrl(Qs(d => d.Remove("stock")));
+    var urlNoBulk = BuildUrl(Qs(d => d.Remove("bulk")));
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/shop.css" asp-append-version="true" />
+}
+
+<section class="pg" id="shop-page" data-query="@Model.Query">
+    <p class="cr m"><a asp-controller="Home" asp-action="Index">Home</a> &nbsp;/&nbsp; Shop / All electronics</p>
+    <div class="ban">
+        <div>
+            <h1>Find your next upgrade</h1>
+            <p class="m">Carefully chosen devices. A better everyday starts here.</p>
+        </div>
+    </div>
+
+    <div class="lay">
+        <partial name="_FilterPanel" model="Model" />
+
+        <div>
+            <div class="hx">
+                <span class="m">
+                    @if (Model.HasFilters) { <text>Showing @Model.Total matching product@(Model.Total == 1 ? "" : "s")</text> }
+                    else { <text>Showing @Model.From–@Model.To of @Model.Total products</text> }
+                </span>
+                <label class="sel">
+                    Sort:
+                    <select name="sort" form="shop-filter" aria-label="Sort by">
+                        @foreach (var (value, label) in ShopViewModel.SortOptions)
+                        {
+                            <option value="@value" selected="@(Model.Sort == value)">@label</option>
+                        }
+                    </select>
+                </label>
+            </div>
+
+            @if (Model.HasFilters)
+            {
+                <p class="chp">
+                    @if (!string.IsNullOrWhiteSpace(Model.Query)) { <a class="tg b" href="@urlNoQuery">“@Model.Query” ×</a> }
+                    @foreach (var c in Model.Categories) { var u = BuildUrl(Qs(), Model.Categories.Where(x => x != c)); <a class="tg b" href="@u">@SampleData.CategoryName(c) ×</a> }
+                    @foreach (var b in Model.Brands) { var u = BuildUrl(Qs(), null, Model.Brands.Where(x => x != b)); <a class="tg b" href="@u">@b ×</a> }
+                    @if (Model.PriceMin.HasValue || Model.PriceMax.HasValue) { <a class="tg b" href="@urlNoPrice">Price ×</a> }
+                    @if (Model.InStockOnly) { <a class="tg b" href="@urlNoStock">In stock ×</a> }
+                    @if (Model.BulkOnly) { <a class="tg b" href="@urlNoBulk">Bulk pricing ×</a> }
+                    <a class="pc2" asp-controller="Shop" asp-action="Index">Clear all</a>
+                </p>
+            }
+
+            @if (Model.Products.Count > 0)
+            {
+                <div class="g3">
+                    @foreach (var p in Model.Products)
+                    {
+                        <partial name="_ProductCard" model="p" />
+                    }
+                </div>
+
+                @if (Model.TotalPages > 1)
+                {
+                    <div class="pgn">
+                        <span class="m">Showing @Model.From–@Model.To of @Model.Total products</span>
+                        <div>
+                            @if (Model.Page > 1) { <a href="@PageUrl(Model.Page - 1)" aria-label="Previous page">‹</a> }
+                            @for (var i = 1; i <= Model.TotalPages; i++)
+                            {
+                                <a href="@PageUrl(i)" class="@(i == Model.Page ? "on" : "")" aria-current="@(i == Model.Page ? "page" : null)">@i</a>
+                            }
+                            @if (Model.Page < Model.TotalPages) { <a href="@PageUrl(Model.Page + 1)" aria-label="Next page">›</a> }
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="m" id="none">No devices match these filters. Try Reset filters.</p>
+            }
+
+            <div class="mint">
+                <h3>Buying for your team?</h3>
+                <p class="m">Volume pricing is available on selected devices. Build your list and we’ll tailor a quote.</p>
+                <a class="bo" asp-controller="Home" asp-action="BusinessBuying">Start a bulk request <svg class="i"><use href="#i-arrow" /></svg></a>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/shop.js" asp-append-version="true"></script>
+}

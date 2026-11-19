@@ -1,0 +1,128 @@
+@model IEnumerable<TDevElectronics.Models.Entities.User>
+@{
+    ViewData["Title"] = "Quản lý Người dùng & Quyền";
+}
+
+<div class="dash-head" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+    <div>
+        <h1>Quản lý Người dùng &amp; Quản trị viên</h1>
+        <p class="m">Tìm kiếm, lọc trạng thái kích hoạt, phân quyền và quản lý tài khoản hệ thống.</p>
+    </div>
+    <a class="bt" asp-area="Admin" asp-controller="Users" asp-action="Invites">Quản lý mã mời Admin</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div style="background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10b981; padding: 12px; margin-bottom: 20px; border-radius: 4px;">
+        @TempData["Success"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 12px; margin-bottom: 20px; color: #ef4444; border-radius: 4px;">
+        @TempData["Error"]
+    </div>
+}
+
+<div class="box" style="padding: 20px; border: 1px solid var(--bd); border-radius: 8px;">
+    <h3>Danh sách tài khoản (@(ViewBag.TotalItems ?? 0))</h3>
+
+    <!-- Bộ lọc tìm kiếm -->
+    <form method="get" style="display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0;">
+        <input type="text" name="q" value="@ViewBag.Query" placeholder="Tìm theo tên hoặc email..." style="flex: 1; min-width: 220px; padding: 8px 12px; border: 1px solid var(--bd); border-radius: 4px; background: transparent; color: inherit;" />
+        <select name="role" style="padding: 8px 12px; border: 1px solid var(--bd); border-radius: 4px; background: var(--bg); color: inherit;">
+            <option value="">-- Tất cả vai trò --</option>
+            <option value="Customer" selected="@(ViewBag.Role == "Customer")">Customer</option>
+            <option value="Admin" selected="@(ViewBag.Role == "Admin")">Admin</option>
+        </select>
+        <select name="status" style="padding: 8px 12px; border: 1px solid var(--bd); border-radius: 4px; background: var(--bg); color: inherit;">
+            <option value="">-- Tất cả trạng thái --</option>
+            <option value="active" selected="@(ViewBag.Status == "active")">Active (Hoạt động)</option>
+            <option value="inactive" selected="@(ViewBag.Status == "inactive")">Inactive (Đã khóa)</option>
+        </select>
+        <button type="submit" class="bo">Lọc</button>
+        @if (!string.IsNullOrEmpty(ViewBag.Query) || !string.IsNullOrEmpty(ViewBag.Role) || !string.IsNullOrEmpty(ViewBag.Status))
+        {
+            <a asp-action="Index" class="bo" style="display: flex; align-items: center; justify-content: center; text-decoration: none;">Xóa lọc</a>
+        }
+    </form>
+
+    <div class="tw">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--bd); text-align: left;">
+                    <th style="padding: 10px;">Họ tên</th>
+                    <th style="padding: 10px;">Email</th>
+                    <th style="padding: 10px;">Vai trò</th>
+                    <th style="padding: 10px;">Trạng thái</th>
+                    <th style="padding: 10px;">Ngày tạo</th>
+                    <th style="padding: 10px; text-align: right;">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var user in Model)
+                    {
+                        <tr style="border-bottom: 1px solid var(--bd);">
+                            <td style="padding: 10px; font-weight: 600;">@user.FullName</td>
+                            <td style="padding: 10px;">@user.Email</td>
+                            <td style="padding: 10px;">
+                                <span class="pill" style="font-size: 11px; padding: 2px 8px; @(user.Role == "Admin" ? "background: rgba(239, 68, 68, 0.2); color: #ef4444;" : "")">
+                                    @user.Role
+                                </span>
+                            </td>
+                            <td style="padding: 10px;">
+                                @if (user.IsActive)
+                                {
+                                    <span style="color: #10b981;">● Active</span>
+                                }
+                                else
+                                {
+                                    <span style="color: #ef4444;">● Inactive</span>
+                                }
+                            </td>
+                            <td style="padding: 10px;">@user.CreatedAt.ToString("dd/MM/yyyy")</td>
+                            <td style="padding: 10px; text-align: right; white-space: nowrap;">
+                                <!-- Form đổi nhanh vai trò -->
+                                <form asp-area="Admin" asp-controller="Users" asp-action="Edit" method="post" style="display: inline-flex; gap: 6px; align-items: center; margin-right: 4px;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@user.Id" />
+                                    <input type="hidden" name="isActive" value="@user.IsActive.ToString().ToLower()" />
+                                    <select name="role" onchange="if(confirm('Đổi vai trò của @user.Email thành ' + this.value + '?')) this.form.submit(); else this.value='@user.Role';" style="padding: 4px 6px; border: 1px solid var(--bd); border-radius: 4px; background: var(--bg); color: inherit; font-size: 12.5px;">
+                                        <option value="Customer" selected="@(user.Role == "Customer")">Customer</option>
+                                        <option value="Admin" selected="@(user.Role == "Admin")">Admin</option>
+                                    </select>
+                                </form>
+
+                                <!-- Form bật/tắt Active/Inactive -->
+                                <form asp-area="Admin" asp-controller="Users" asp-action="Edit" method="post" style="display: inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@user.Id" />
+                                    <input type="hidden" name="role" value="@user.Role" />
+                                    <input type="hidden" name="isActive" value="@((!user.IsActive).ToString().ToLower())" />
+                                    <button type="submit" class="bo sm @(user.IsActive ? "danger" : "")" onclick="return confirm('Thay đổi trạng thái tài khoản @user.Email?')">
+                                        @(user.IsActive ? "Khóa" : "Mở khóa")
+                                    </button>
+                                </form>
+
+                                <!-- Form xóa -->
+                                <form asp-area="Admin" asp-controller="Users" asp-action="Delete" asp-route-id="@user.Id" method="post" style="display: inline;" onsubmit="return confirm('Bạn chắc chắn muốn xóa tài khoản @user.Email?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="bo sm danger">Xóa</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" style="padding: 24px; text-align: center; opacity: 0.7;">Không tìm thấy người dùng phù hợp.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,13 @@
+﻿@* Chatbot khách. Gọi 2 lần trong _Layout:
+   - @await Html.PartialAsync("_Chatbot", "head") đặt trong <head>, TRƯỚC mobile.css (mobile.css phải nạp cuối cùng)
+   - @await Html.PartialAsync("_Chatbot", "body") đặt cuối <body>, sau app.js và avatar.js
+   chatbot.js tự ẩn trong khung xem trước nhúng (iframe) của Edit pages. *@
+@model string
+@if (Model == "head")
+{
+    <link rel="stylesheet" href="~/css/chatbot.css" asp-append-version="true">
+}
+else
+{
+    <script src="~/js/chatbot.js" asp-append-version="true"></script>
+}

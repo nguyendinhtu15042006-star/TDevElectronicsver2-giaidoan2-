@@ -1,0 +1,23 @@
+@model ProductFormViewModel
+<div asp-validation-summary="ModelOnly" class="m" style="color:#ef4444"></div>
+<input type="hidden" asp-for="OriginalSku" />
+<div class="g2s">
+    <label class="fld"><small>Tên sản phẩm *</small><input asp-for="Name" /><span asp-validation-for="Name" style="color:#ef4444"></span></label>
+    <label class="fld"><small>SKU *</small><input asp-for="Sku" readonly="@Model.IsEdit" /><span asp-validation-for="Sku" style="color:#ef4444"></span></label>
+    <label class="fld"><small>Danh mục *</small>
+        <select asp-for="CategorySlug">
+            <option value="">-- Chọn --</option>
+            @foreach (var c in Model.Categories) { <option value="@c.Slug" selected="@(c.Slug == Model.CategorySlug)">@c.Name</option> }
+        </select><span asp-validation-for="CategorySlug" style="color:#ef4444"></span></label>
+    <label class="fld"><small>Thương hiệu</small><input asp-for="Brand" /></label>
+    <label class="fld"><small>Giá bán lẻ</small><input asp-for="Price" type="number" step="0.01" min="0" /><span asp-validation-for="Price" style="color:#ef4444"></span></label>
+    <label class="fld"><small>Đơn vị tiền</small>
+        <select asp-for="Currency"><option value="VND">VND</option><option value="USD">USD</option></select></label>
+    <label class="fld"><small>Tồn kho</small><input asp-for="Stock" type="number" min="0" /><span asp-validation-for="Stock" style="color:#ef4444"></span></label>
+    <label class="ck"><input asp-for="IsActive" type="checkbox" />Đang bán (Active)</label>
+</div>
+<label class="fld"><small>About this device</small><textarea asp-for="About" rows="3"></textarea></label>
+<label class="fld"><small>Overview highlights (mỗi dòng một ý)</small><textarea asp-for="Highlights" rows="3"></textarea></label>
+<label class="fld"><small>Technical specifications (mỗi dòng Tên: giá trị)</small><textarea asp-for="Specs" rows="4"></textarea></label>
+<label class="fld"><small>Delivery &amp; warranty (mỗi dòng một ý)</small><textarea asp-for="Delivery" rows="3"></textarea></label>
+<p class="m"><small>Ảnh chính và tối đa 3 ảnh phụ: thêm ô tải ảnh vào wwwroot/uploads ở giai đoạn 2.</small></p>

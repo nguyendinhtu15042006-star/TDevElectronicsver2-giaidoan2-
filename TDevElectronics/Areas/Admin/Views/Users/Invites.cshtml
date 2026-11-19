@@ -1,0 +1,119 @@
+@model List<TDevElectronics.Models.Entities.InviteCode>
+@using TDevElectronics.Models.Enums
+@{
+    ViewData["Title"] = "Mã mời quản trị";
+    ViewBag.Page = "a-usr";
+}
+<section class="pg ad">
+    <div class="ab">
+        <p class="cr m"><a asp-action="Index">Users</a> / Invite codes</p>
+        <h1>Mã mời quản trị</h1>
+        <p class="m">Mã dạng XXXX-XXXX-XXXX-XXXX-XXXX chỉ hiện đầy đủ một lần lúc tạo; hệ thống chỉ lưu bản băm SHA-256 và 4 ký tự cuối.</p>
+
+        @if (TempData["NewInviteCode"] != null)
+        {
+            var newCode = TempData["NewInviteCode"]?.ToString();
+            var newLink = TempData["NewInviteLink"]?.ToString();
+            <div class="cd" style="border-left:4px solid #10b981;margin-bottom:16px">
+                <h4 style="margin:0 0 6px;color:#10b981">Mã mời Admin mới đã được tạo (chỉ hiện 1 lần)</h4>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0">
+                    <code style="font-size:16px;padding:6px 12px;border:1px dashed #10b981;border-radius:6px;font-weight:bold">@newCode</code>
+                    <button type="button" class="bt sm" onclick="copyInvite('@newCode', this)">Copy code</button>
+                    <button type="button" class="bo sm" onclick="copyInvite('@newLink', this)">Copy sign-up link</button>
+                </div>
+                <small class="m" style="word-break:break-all">Sign-up link: @newLink</small>
+            </div>
+        }
+
+        @if (TempData["Success"] != null && TempData["NewInviteCode"] == null)
+        {
+            <div class="cd" style="border-left:4px solid #10b981;margin-bottom:16px">@TempData["Success"]</div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="cd" style="border-left:4px solid #ef4444;margin-bottom:16px;color:#ef4444">@TempData["Error"]</div>
+        }
+
+        <form asp-action="CreateInvite" method="post" class="cd" style="margin-bottom:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
+            @Html.AntiForgeryToken()
+            <label class="fld" style="flex:1;min-width:220px;margin:0">
+                <small>Email chỉ định (tùy chọn)</small>
+                <input type="email" name="targetEmail" placeholder="Để trống nếu cho phép email bất kỳ" />
+            </label>
+            <label class="fld" style="min-width:170px;margin:0">
+                <small>Thời hạn hiệu lực</small>
+                <select name="expiryHours">
+                    <option value="24" selected>24 giờ</option>
+                    <option value="48">48 giờ</option>
+                    <option value="168">7 ngày</option>
+                    <option value="720">30 ngày</option>
+                </select>
+            </label>
+            <button type="submit" class="bt">Tạo mã mời</button>
+        </form>
+
+        <div class="tw">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Đuôi mã</th>
+                        <th>Email chỉ định</th>
+                        <th>Tạo lúc</th>
+                        <th>Hết hạn</th>
+                        <th>Trạng thái</th>
+                        <th style="text-align:right">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var i in Model)
+                        {
+                            var st = i.Status.ToString();
+                            <tr>
+                                <td><b>…@i.LastFourChars</b></td>
+                                <td>@(i.TargetEmail ?? "Bất kỳ")</td>
+                                <td>@i.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@i.ExpiresAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td><span class="tg @(i.Status == InviteStatus.Active ? "" : "n")">@st</span></td>
+                                <td style="text-align:right;white-space:nowrap">
+                                    @if (i.Status == InviteStatus.Active)
+                                    {
+                                        <form asp-action="RevokeInvite" asp-route-id="@i.Id" method="post" style="display:inline" onsubmit="return confirm('Thu hồi mã mời …@i.LastFourChars?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="bo sm danger">Revoke</button>
+                                        </form>
+                                    }
+                                    <form asp-action="RemoveInvite" asp-route-id="@i.Id" method="post" style="display:inline" onsubmit="return confirm('Xóa bản ghi mã mời này?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="bo sm">Remove</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="6" class="m" style="text-align:center;padding:20px">Chưa có mã mời nào.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <p style="margin-top:16px"><a class="bo" asp-action="Index">Về danh sách người dùng</a></p>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function copyInvite(text, btn) {
+            if (!text) return;
+            navigator.clipboard.writeText(text).then(function () {
+                var old = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(function () { btn.textContent = old; }, 2000);
+            });
+        }
+    </script>
+}

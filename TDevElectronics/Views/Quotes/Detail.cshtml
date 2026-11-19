@@ -1,0 +1,32 @@
+@model QuoteView?
+@using TDevElectronics.Data
+@using TDevElectronics.Services
+@{
+    ViewData["Title"] = "Quote " + ViewBag.Code;
+    ViewBag.Page = "quote-detail";
+}
+<section class="pg" id="quote-detail">
+<p class="cr m"><a href="/">Home</a> &nbsp;/&nbsp; <a asp-action="Index">My quotes</a> &nbsp;/&nbsp; @ViewBag.Code</p>
+@if (TempData["Success"] != null) { <div class="cd" style="border-left:4px solid #10b981;margin-bottom:16px">@TempData["Success"]</div> }
+@if (Model is null)
+{
+    <h1>Quote @ViewBag.Code</h1>
+    <div class="cd"><span class="tg a">Under review</span>
+        <p class="m">We are checking your requirements and will send a tailored quote within one business day.</p></div>
+}
+else
+{
+    var tax = Math.Round(Model.Quote.Amount * 0.08m, 2);
+    <h1>Quote @Model.Quote.Id <span class="tg">@Model.Status</span></h1>
+    <p class="m">@Model.Quote.Company · @Model.Quote.Project · Issued @Model.Quote.Date.ToString("dd MMM yyyy")</p>
+    <div class="cd">
+        <p>@Model.Quote.Notes</p>
+        <p class="sl"><span class="m">Subtotal</span><b>@SampleData.Money(Model.Quote.Amount)</b></p>
+        <p class="sl"><span class="m">Tax (8%)</span><b>@SampleData.Money(tax)</b></p>
+        <p class="sl"><b>Total</b><b class="tot">@SampleData.Money(Model.Quote.Amount + tax)</b></p>
+        @if (Model.Status == "Quoted") { <a class="bt" asp-controller="Checkout" asp-action="Index">Accept &amp; checkout</a> }
+        @if (Model.Status == "Expired") { <a class="bt" asp-action="Rfq">Request a new quote</a> }
+    </div>
+}
+<p><a class="bo" asp-action="Index">Back to my quotes</a></p>
+</section>

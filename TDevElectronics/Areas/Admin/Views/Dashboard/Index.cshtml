@@ -1,0 +1,47 @@
+@model DashboardViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "Bảng điều khiển";
+    ViewBag.Page = "a-dash";
+}
+
+<div class="dash-head" style="margin-bottom: 24px;">
+    <h1>Dashboard</h1>
+    <p class="m">Tổng quan tình hình kinh doanh và hoạt động của hệ thống.</p>
+</div>
+
+<div class="g4" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px;">
+    <div class="box" style="padding: 18px; border: 1px solid var(--bd); border-radius: 8px;">
+        <small class="m">DOANH THU THỰC TẾ</small>
+        <h2 style="margin: 8px 0; color: #10b981;">@Model.RevenueVnd.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) ₫</h2>
+        <small class="m">Loại trừ các đơn đã hủy</small>
+    </div>
+    <div class="box" style="padding: 18px; border: 1px solid var(--bd); border-radius: 8px;">
+        <small class="m">ĐƠN CHỜ XỬ LÝ</small>
+        <h2 style="margin: 8px 0;">@Model.PendingOrders</h2>
+        <small class="m">@Model.CancelRequests yêu cầu hủy đang chờ duyệt</small>
+    </div>
+    <div class="box" style="padding: 18px; border: 1px solid var(--bd); border-radius: 8px;">
+        <small class="m">YÊU CẦU BÁO GIÁ MỚI</small>
+        <h2 style="margin: 8px 0;">@Model.NewQuotes</h2>
+        <small class="m">Từ khách hàng doanh nghiệp</small>
+    </div>
+    <div class="box" style="padding: 18px; border: 1px solid var(--bd); border-radius: 8px;">
+        <small class="m">SẢN PHẨM SẮP HẾT HÀNG</small>
+        <h2 style="margin: 8px 0; color: #f59e0b;">@Model.LowStockProducts</h2>
+        <small class="m">Tồn kho &lt; 5 chiếc</small>
+    </div>
+</div>
+
+<h3>Đơn hàng gần đây</h3>
+<div class="tw"><table>
+    <tr><th>Order</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th><th></th></tr>
+    @foreach (var o in Model.RecentOrders)
+    {
+        <tr>
+            <td><b>@o.Id</b></td><td>@o.Customer · @o.Company</td><td>@o.Date.ToString("dd MMM yyyy")</td>
+            <td>@SampleData.Money(o.Total)</td><td>@o.Status</td>
+            <td><a asp-area="Admin" asp-controller="Orders" asp-action="Detail" asp-route-id="@o.Id">View</a></td>
+        </tr>
+    }
+</table></div>
